@@ -56,6 +56,39 @@ const UserSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationCode: {
+      type: String,
+      default: null,
+    },
+    verificationCodeExpires: {
+      type: Number,
+      default: null,
+    },
+    resetCode: {
+      type: String,
+      default: null,
+    },
+    resetCodeExpires: {
+      type: Date,
+      default: null,
+    },
+    passwordChangeCode: {
+      type: String,
+      default: null,
+    },
+    passwordChangeCodeExpires: {
+      type: Number,
+      default: null,
+    },
+    pendingPasswordChange: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

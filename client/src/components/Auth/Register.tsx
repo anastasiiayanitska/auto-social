@@ -27,7 +27,7 @@ const Register = () => {
   });
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/me");
+      navigate("/verifyEmail");
     }
   }, [isAuthenticated, navigate]);
 

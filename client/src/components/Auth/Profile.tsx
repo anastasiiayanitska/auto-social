@@ -5,7 +5,7 @@ import { AppDispatch, RootState } from "../../store/store";
 import { fetchUserProfileById } from "../../store/authSlice";
 import { User } from "../../types/auth";
 
-const GetProfile: React.FC = () => {
+const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const [userProfile, setUserProfile] = useState<User | null>(null);
@@ -71,4 +71,4 @@ const GetProfile: React.FC = () => {
   );
 };
 
-export default GetProfile;
+export default Profile;

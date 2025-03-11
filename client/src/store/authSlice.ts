@@ -1,5 +1,21 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { AuthState, RegisterData, LoginData, User } from "../types/auth";
+import {
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+  isRejectedWithValue,
+} from "@reduxjs/toolkit";
+import {
+  AuthState,
+  RegisterData,
+  LoginData,
+  User,
+  VerifyEmailData,
+  ResendVerificationData,
+  ForgotPasswordData,
+  ResetPasswordData,
+  ChangePasswordData,
+  VerifyPasswordChangeData,
+} from "../types/auth";
 import axios from "axios";
 
 const API_URL = "http://localhost:3000/api"; // Замініть на ваш бекенд URL
@@ -9,6 +25,9 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: false,
+  verificationSent: false,
+  passwordResetSent: false,
+  passwordChangeRequested: false,
 };
 
 // 🔹 РЕЄСТРАЦІЯ
@@ -16,7 +35,7 @@ export const registerUser = createAsyncThunk<
   { user: User }, // тип результату
   RegisterData, // тип аргументу (передані дані)
   { rejectValue: string } // тип відхилення
->("auth/register", async (formData, { rejectWithValue }) => {
+>("/register", async (formData, { rejectWithValue }) => {
   try {
     const response = await axios.post(`${API_URL}/register`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -35,7 +54,7 @@ export const loginUser = createAsyncThunk<
   { user: User },
   LoginData,
   { rejectValue: string }
->("auth/login", async (credentials: LoginData, { rejectWithValue }) => {
+>("/login", async (credentials: LoginData, { rejectWithValue }) => {
   try {
     console.log(credentials);
 
@@ -52,7 +71,7 @@ export const loginUser = createAsyncThunk<
 
 // 🔹 ВИХІД
 export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
-  "auth/logout",
+  "/logout",
   async (_, { rejectWithValue }) => {
     try {
       await axios.post(
@@ -73,7 +92,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
 
 // 🔹 ОТРИМАННЯ КОРИСТУВАЧА
 export const fetchUser = createAsyncThunk<User, void, { rejectValue: string }>(
-  "auth/fetchUser",
+  "/fetchUser",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/me`, {
@@ -93,7 +112,7 @@ export const updateUser = createAsyncThunk<
   { user: User },
   { userId: string; userData: RegisterData },
   { rejectValue: string }
->("auth/updateUser", async ({ userId, userData }, { rejectWithValue }) => {
+>("/updateUser", async ({ userId, userData }, { rejectWithValue }) => {
   try {
     // Створюємо FormData для відправки файлів
     const formData = new FormData();
@@ -133,7 +152,7 @@ export const fetchUserProfileById = createAsyncThunk<
   User,
   string,
   { rejectValue: string }
->("auth/fetchUserProfileById", async (userId, { rejectWithValue }) => {
+>("/fetchUserProfileById", async (userId, { rejectWithValue }) => {
   try {
     const response = await axios.get(`${API_URL}/profile/${userId}`, {
       withCredentials: true,
@@ -145,11 +164,128 @@ export const fetchUserProfileById = createAsyncThunk<
     );
   }
 });
+// 🔹 ПІДТВЕРДЖЕННЯ EMAIL
+export const verifyEmail = createAsyncThunk<
+  { user: User; token: string },
+  VerifyEmailData,
+  { rejectValue: string }
+>("/verifyEmail", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(`${API_URL}/verify-email`, data, {
+      withCredentials: true,
+    });
+    return response.data.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Помилка підтвердження електронної пошти"
+    );
+  }
+});
+
+// 🔹 ПОВТОРНА ВІДПРАВКА КОДУ ПІДТВЕРДЖЕННЯ
+
+export const resendVerificationCode = createAsyncThunk<
+  void,
+  ResendVerificationData,
+  { rejectValue: string }
+>("/resendVerificationCode", async (data, { rejectWithValue }) => {
+  try {
+    await axios.post(`${API_URL}/resend-verification-code`, data, {
+      withCredentials: true,
+    });
+    return;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Помилка відправки коду підтвердження"
+    );
+  }
+});
+
+// 🔹 ЗАБУЛИ ПАРОЛЬ (ЗАПИТ НА ВІДНОВЛЕННЯ)
+export const forgotPassword = createAsyncThunk<
+  void,
+  ForgotPasswordData,
+  { rejectValue: string }
+>("/forgotPassword", async (data, { rejectWithValue }) => {
+  try {
+    await axios.post(`${API_URL}/forgot-password`, data, {
+      withCredentials: true,
+    });
+    return;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Помилка запиту на відновлення пароля"
+    );
+  }
+});
+
+// 🔹 СКИДАННЯ ПАРОЛЯ
+export const resetPassword = createAsyncThunk<
+  void,
+  ResetPasswordData,
+  { rejectValue: string }
+>("/resetPassword", async (data, { rejectWithValue }) => {
+  try {
+    await axios.post(`${API_URL}/reset-password`, data, {
+      withCredentials: true,
+    });
+    return;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Помилка скидання пароля"
+    );
+  }
+});
+
+// 🔹 ЗМІНА ПАРОЛЯ (ІНІЦІЮВАННЯ)
+export const changePassword = createAsyncThunk<
+  void,
+  ChangePasswordData,
+  { rejectValue: string }
+>("/changePassword", async (data, { rejectWithValue }) => {
+  try {
+    await axios.post(`${API_URL}/change-password`, data, {
+      withCredentials: true,
+    });
+    return;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Помилка запиту на зміну пароля"
+    );
+  }
+});
+
+// 🔹 ПІДТВЕРДЖЕННЯ ЗМІНИ ПАРОЛЯ
+export const verifyPasswordChange = createAsyncThunk<
+  void,
+  VerifyPasswordChangeData,
+  { rejectValue: string }
+>("/verifyPasswordChange", async (data, { rejectWithValue }) => {
+  try {
+    await axios.post(`${API_URL}/verify-password-change`, data, {
+      withCredentials: true,
+    });
+    return;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Помилка підтвердження зміни пароля"
+    );
+  }
+});
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    clearAuthError: (state) => {
+      state.error = null;
+    },
+    resetAuthStates: (state) => {
+      state.verificationSent = false;
+      state.passwordResetSent = false;
+      state.passwordChangeRequested = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // 🔹 Реєстрація
@@ -157,7 +293,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.loading = false;
         state.error = null;
-        state.isAuthenticated = true;
+        state.verificationSent = true;
       })
       // 🔹 Логін
       .addCase(loginUser.fulfilled, (state, action) => {
@@ -169,6 +305,7 @@ const authSlice = createSlice({
       // 🔹 Вихід
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
+        state.token = null;
         state.loading = false;
         state.error = null;
         state.isAuthenticated = false;
@@ -179,14 +316,44 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
       })
+      // 🔹 Оновлення користувача
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
       })
-      .addCase(fetchUserProfileById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // 🔹 Підтвердження email
+      .addCase(verifyEmail.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.verificationSent = false;
+      })
+      // 🔹 Повторна відправка коду підтвердження
+      .addCase(resendVerificationCode.fulfilled, (state) => {
+        state.loading = false;
+        state.verificationSent = true;
+      })
+      // 🔹 Забули пароль
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.loading = false;
+        state.passwordResetSent = true;
+      })
+      // 🔹 Скидання пароля
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.loading = false;
+        state.passwordResetSent = false;
+      })
+      // 🔹 Запит на зміну пароля
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+        state.passwordChangeRequested = true;
+      })
+      // 🔹 Підтвердження зміни пароля
+      .addCase(verifyPasswordChange.fulfilled, (state) => {
+        state.loading = false;
+        state.passwordChangeRequested = false;
       })
       // 🔹 Ловимо всі pending-запити
       .addMatcher(
@@ -207,4 +374,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { clearAuthError, resetAuthStates } = authSlice.actions;
 export default authSlice.reducer;

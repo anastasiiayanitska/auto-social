@@ -1,7 +1,10 @@
 import express, { Application } from 'express';
 import connectDB from './config/database';
 import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 import postRoutes from './routes/postRouter';
+import interactionRoutes from './routes/interactionRoutes';
+import subscriptionRoutes from './routes/subscriptionRoutes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import 'dotenv/config';
@@ -19,7 +22,10 @@ app.use(
   }),
 );
 app.use('/api', authRoutes);
-app.use('/', postRoutes);
+app.use('/api', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/interactions', interactionRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 const startServer = async (): Promise<void> => {
   try {

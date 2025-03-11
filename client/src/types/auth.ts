@@ -10,6 +10,7 @@ export interface User {
   phoneNumber?: string;
   website?: string;
   createdAt: Date;
+  emailVerified?: boolean;
 }
 
 export interface AuthState {
@@ -18,6 +19,9 @@ export interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  verificationSent: boolean;
+  passwordResetSent: boolean;
+  passwordChangeRequested: boolean;
 }
 
 export interface RegisterData {
@@ -36,4 +40,32 @@ export interface RegisterData {
 export interface LoginData {
   email: string;
   password: string;
+}
+
+export interface VerifyEmailData {
+  email: string;
+  code: string;
+}
+
+export interface ResendVerificationData {
+  email: string;
+}
+
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface ResetPasswordData {
+  email: string;
+  code: string;
+  password: string;
+}
+
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface VerifyPasswordChangeData {
+  code: string;
 }
