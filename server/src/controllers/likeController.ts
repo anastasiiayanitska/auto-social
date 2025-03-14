@@ -17,7 +17,7 @@ export const likePost = async (
     if (!post) {
       res.status(404).json({
         success: false,
-        message: 'Пост не знайдено',
+        message: 'Post not found',
       });
       return;
     }
@@ -27,7 +27,7 @@ export const likePost = async (
     if (existingLike) {
       res.status(400).json({
         success: false,
-        message: 'Ви вже поставили лайк цьому посту',
+        message: 'You have already liked this post',
       });
       return;
     }
@@ -43,12 +43,12 @@ export const likePost = async (
 
     res.status(200).json({
       success: true,
-      message: 'Лайк успішно додано',
+      message: 'Like successfully added',
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при додаванні лайку',
+      message: error.message || 'Error adding like',
     });
   }
 };
@@ -68,7 +68,7 @@ export const unlikePost = async (
     if (!like) {
       res.status(404).json({
         success: false,
-        message: 'Лайк не знайдено',
+        message: 'Like not found',
       });
       return;
     }
@@ -81,12 +81,12 @@ export const unlikePost = async (
 
     res.status(200).json({
       success: true,
-      message: 'Лайк успішно видалено',
+      message: 'Like successfully removed',
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при видаленні лайку',
+      message: error.message || 'Error removing like',
     });
   }
 };
@@ -110,7 +110,7 @@ export const checkLikeStatus = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при перевірці статусу лайку',
+      message: error.message || 'Error checking like status',
     });
   }
 };

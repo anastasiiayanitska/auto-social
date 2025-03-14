@@ -24,7 +24,7 @@ export const unfollowUser = async (
 ) => {
   try {
     await subscriptionService.unfollowUser(req.user._id, req.params.userId);
-    res.status(200).json({ success: true, message: 'Відписка успішна' });
+    res.status(200).json({ success: true, message: 'Unfollowed successfully' });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -72,7 +72,7 @@ export const checkFollowStatus = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при перевірці статусу підписки',
+      message: error.message || 'Error checking follow status',
     });
   }
 };
@@ -84,14 +84,12 @@ export const getUserFeed = async (
 ) => {
   try {
     const userId = req.user._id;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const feed = await subscriptionService.getUserFeed(userId, page, limit);
+    const feed = await subscriptionService.getUserFeed(userId);
     res.status(200).json(feed);
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні стрічки новин',
+      message: error.message || 'Error retrieving user feed',
     });
   }
 };

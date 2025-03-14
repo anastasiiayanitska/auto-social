@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { fetchUser } from "../store/authSlice";
+import { fetchUser } from "../store/auth/authSlice";
 import { selectPostsError } from "../store/postSlice";
 import CreatePostForm from "../components/Posts/CreatePostForm";
 import PostList from "../components/Posts/PostList";

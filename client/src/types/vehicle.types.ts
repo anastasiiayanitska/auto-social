@@ -41,8 +41,3 @@ export enum Condition {
   USED = "used",
   FOR_PARTS = "for_parts",
 }
-export enum PostType {
-  REGULAR = "regular",
-  PRODUCT = "product",
-  SERVICE = "service",
-}

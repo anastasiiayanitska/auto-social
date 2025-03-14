@@ -4,6 +4,7 @@ import {
   getUserPosts,
   getPostById,
   getAllPosts,
+  getMyPosts,
   deletePost,
   updatePost,
 } from '../controllers/postController';
@@ -28,6 +29,7 @@ router.get('/:userId/all-saved-post', allSavedPosts);
 router.get('/:postId/saved-user', allUserSavedPosts);
 router.get('/:postId/save-status', protect, statusSaved);
 router.post('/create', protect, uploadMultiple, validateCreatePost, createPost);
+router.get('/user/me', protect, getMyPosts);
 router.get('/user/:id', protect, getUserPosts);
 router.get('/:id', protect, getPostById);
 router.get('/', protect, getAllPosts);

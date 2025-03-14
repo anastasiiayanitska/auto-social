@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { fetchUser } from "../store/authSlice"; // Используем уже существующий экшен
+import { fetchUser } from "../store/auth/userThunks"; // Используем уже существующий экшен
 
 const AuthCheck = () => {
   const dispatch = useDispatch();

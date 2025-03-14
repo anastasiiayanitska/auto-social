@@ -22,6 +22,7 @@ export interface AuthState {
   verificationSent: boolean;
   passwordResetSent: boolean;
   passwordChangeRequested: boolean;
+  users: User[] | null;
 }
 
 export interface RegisterData {
@@ -68,4 +69,9 @@ export interface ChangePasswordData {
 
 export interface VerifyPasswordChangeData {
   code: string;
+}
+
+export interface UsersApiResponse {
+  success: boolean;
+  data: User[];
 }

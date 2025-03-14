@@ -3,6 +3,7 @@ import { PostType, IServicePost, IProductPost } from '../types/post.types';
 import Like from '../models/Like';
 import Comment from '../models/Comments';
 import { imageHandler } from '../utils/imageHandler';
+import mongoose, { ObjectId } from 'mongoose';
 
 export const postService = {
   async createPost(
@@ -61,25 +62,16 @@ export const postService = {
       .exec();
   },
 
-  async getAllPosts(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
-
-    const posts = await Post.find()
+  async getAllPosts() {
+    return await Post.find()
       .populate('user', 'username avatar firstName lastName')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ createdAt: -1 });
+  },
 
-    const total = await Post.countDocuments();
-
-    return {
-      posts,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalPosts: total,
-      },
-    };
+  async getMyPosts(userId: string) {
+    return await Post.find({ user: userId })
+      .populate('user', 'username avatar firstName lastName')
+      .sort({ createdAt: -1 });
   },
 
   async deletePost(postId: string, userId: string) {
@@ -87,7 +79,7 @@ export const postService = {
     const post = await Post.findById(postId);
 
     if (!post) {
-      return { success: false, status: 404, message: 'Пост не знайдено' };
+      return { success: false, status: 404, message: 'Post not found' };
     }
 
     // Check if user is the owner
@@ -95,7 +87,7 @@ export const postService = {
       return {
         success: false,
         status: 403,
-        message: 'Ви не маєте прав для видалення цього поста',
+        message: 'You do not have permission to delete this post',
       };
     }
 
@@ -111,7 +103,7 @@ export const postService = {
       Post.findByIdAndDelete(postId),
     ]);
 
-    return { success: true, message: 'Пост успішно видалено' };
+    return { success: true, message: 'Post successfully deleted' };
   },
 
   async updatePost(
@@ -124,7 +116,7 @@ export const postService = {
     const post = await Post.findById(postId);
 
     if (!post) {
-      return { success: false, status: 404, message: 'Пост не знайдено' };
+      return { success: false, status: 404, message: 'Post not found' };
     }
 
     // Check if user is the owner
@@ -132,7 +124,7 @@ export const postService = {
       return {
         success: false,
         status: 403,
-        message: 'Ви не маєте прав для редагування цього поста',
+        message: 'You do not have permission to edit this post',
       };
     }
 

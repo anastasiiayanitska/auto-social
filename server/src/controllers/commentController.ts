@@ -18,7 +18,7 @@ export const createComment = async (
     if (!post) {
       res.status(404).json({
         success: false,
-        message: 'Пост не знайдено',
+        message: 'Post not found',
       });
       return;
     }
@@ -38,7 +38,7 @@ export const createComment = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при створенні коментаря',
+      message: error.message || 'Error creating comment',
     });
   }
 };
@@ -63,12 +63,12 @@ export const deleteComment = async (
 
     res.status(200).json({
       success: true,
-      message: 'Коментар успішно видалено',
+      message: 'Comment successfully deleted',
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при видаленні коментаря',
+      message: error.message || 'Error deleting comment',
     });
   }
 };
@@ -93,7 +93,7 @@ export const getPostComments = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні коментарів',
+      message: error.message || 'Error retrieving comments',
     });
   }
 };

@@ -189,6 +189,35 @@ export const getMe = async (
   }
 };
 
+export const getAllUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const users = await User.find({});
+
+    if (!users) {
+      res.status(404).json({
+        success: false,
+        message: 'Користувача не знайдено',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error: any) {
+    console.error('Помилка отримання:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Помилка при отриманні',
+    });
+  }
+};
+
 export const getUserById = async (
   req: Request,
   res: Response,

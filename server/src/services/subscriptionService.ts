@@ -5,15 +5,15 @@ import mongoose from 'mongoose';
 
 export const followUser = async (followerId: string, followingId: string) => {
   const followingUser = await User.findById(followingId);
-  if (!followingUser) throw new Error('Користувача не знайдено');
-  if (followerId === followingId)
-    throw new Error('Ви не можете підписатися на себе');
+  if (!followingUser) throw new Error('User not found');
+  if (followerId === followingId) throw new Error('You cannot follow yourself');
 
   const existingSubscription = await Subscription.findOne({
     follower: followerId,
     following: followingId,
   });
-  if (existingSubscription) throw new Error('Ви вже підписані');
+  if (existingSubscription)
+    throw new Error('You are already following this user');
 
   return await Subscription.create({
     follower: followerId,
@@ -26,7 +26,7 @@ export const unfollowUser = async (followerId: string, followingId: string) => {
     follower: followerId,
     following: followingId,
   });
-  if (!subscription) throw new Error('Ви не були підписані');
+  if (!subscription) throw new Error('You were not following this user');
 };
 
 export const getFollowers = async (userId: string) => {
@@ -54,32 +54,18 @@ export const checkFollowStatus = async (
   return !!subscription;
 };
 
-export const getUserFeed = async (
-  userId: string,
-  page: number,
-  limit: number,
-) => {
-  const skip = (page - 1) * limit;
+export const getUserFeed = async (userId: string) => {
   const following = await Subscription.find({ follower: userId }).select(
     'following',
   );
   const followingIds = following.map((f) => f.following);
-  // followingIds.push(userId);
 
   const posts = await Post.find({ user: { $in: followingIds } })
     .populate('user', 'username avatar firstName lastName')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+    .sort({ createdAt: -1 });
 
-  const total = await Post.countDocuments({ user: { $in: followingIds } });
   return {
     success: true,
     data: posts,
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      totalPosts: total,
-    },
   };
 };

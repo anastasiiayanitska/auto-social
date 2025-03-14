@@ -8,6 +8,7 @@ export const createPost = async (
 ): Promise<void> => {
   try {
     const userId = req.user._id;
+
     const newPost = await postService.createPost(
       userId,
       req.body,
@@ -59,7 +60,7 @@ export const getPostById = async (
     if (!post) {
       res.status(404).json({
         success: false,
-        message: 'Пост не знайдено',
+        message: 'Post not found',
       });
       return;
     }
@@ -71,7 +72,7 @@ export const getPostById = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні поста',
+      message: error.message || 'Error retrieving post',
     });
   }
 };
@@ -82,20 +83,38 @@ export const getAllPosts = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-
-    const result = await postService.getAllPosts(page, limit);
+    const result = await postService.getAllPosts();
 
     res.status(200).json({
       success: true,
-      data: result.posts,
-      pagination: result.pagination,
+      data: result,
     });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні постів',
+      message: error.message || 'Error retrieving posts',
+    });
+  }
+};
+
+export const getMyPosts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const userId = req.user._id;
+
+    const posts = await postService.getMyPosts(userId);
+
+    res.status(200).json({
+      success: true,
+      data: posts,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error retrieving posts',
     });
   }
 };
@@ -126,7 +145,7 @@ export const deletePost = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при видаленні поста',
+      message: error.message || 'Error deleting post',
     });
   }
 };
@@ -162,7 +181,7 @@ export const updatePost = async (
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при редагуванні поста',
+      message: error.message || 'Error editing post',
     });
   }
 };

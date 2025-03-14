@@ -1,81 +1,106 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { verifyEmail, resendVerificationCode } from "../../store/authSlice";
-import { RootState, AppDispatch } from "../../store/store";
-import { useNavigate } from "react-router-dom";
+import {
+  verifyEmail,
+  resendVerificationCode,
+} from "../../store/auth/verificationThunks";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const VerifyEmail = () => {
-  const dispatch = useDispatch<AppDispatch>();
+function VerifyEmail() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, loading, error, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
+  const location = useLocation();
+  const { loading, error, isAuthenticated } = useSelector(
+    (state) => state.auth
   );
 
-  const [verificationCode, setVerificationCode] = useState("");
+  const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
 
-  // Якщо користувач вже підтверджений, перенаправляємо на профіль
   useEffect(() => {
-    if (isAuthenticated && user?.isVerified) {
-      navigate("/profile");
+    if (location.state?.email) {
+      setEmail(location.state.email);
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [location]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      navigate("/me");
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleVerify = async (e) => {
     e.preventDefault();
 
-    if (!user) return;
+    if (!email) {
+      alert("First enter your email");
+      return;
+    }
 
-    dispatch(
+    const resultAction = await dispatch(
       verifyEmail({
-        email: user.email,
-        verificationCode: verificationCode,
-      })
-    ).then((result) => {
-      // Якщо верифікація успішна, перенаправляємо на профіль
-      if (result.meta.requestStatus === "fulfilled") {
-        navigate("/profile");
-      }
-    });
-  };
-
-  const handleResendCode = () => {
-    if (!user) return;
-
-    dispatch(
-      resendVerificationCode({
-        email: user.email,
+        email,
+        code,
       })
     );
+
+    if (verifyEmail.fulfilled.match(resultAction)) {
+      navigate("/me");
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      alert("First enter your email");
+      return;
+    }
+
+    await dispatch(resendVerificationCode({ email }));
+    alert("A new code has been sent to your email.");
   };
 
   return (
-    <div className="verify-email-container">
-      <h2>Підтвердження електронної пошти</h2>
-      <p>
-        Код підтвердження було надіслано на вашу електронну адресу:{" "}
-        {user?.email}
-      </p>
+    <div>
+      <h2>Email Confirmation</h2>
+      {error && <div className="error">{error}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Введіть код підтвердження"
-          value={verificationCode}
-          onChange={(e) => setVerificationCode(e.target.value)}
-          required
-        />
+      <p>Enter the confirmation code sent to your email.</p>
+
+      <form onSubmit={handleVerify}>
+        {!location.state?.email && (
+          <div>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="code">Confirmation code</label>
+          <input
+            type="text"
+            id="code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+          />
+        </div>
+
         <button type="submit" disabled={loading}>
-          Підтвердити
+          {loading ? "Audit..." : "Confirm"}
         </button>
       </form>
 
-      <button onClick={handleResendCode} disabled={loading}>
-        Надіслати код повторно
+      <button onClick={handleResend} disabled={loading}>
+        Resend code
       </button>
-
-      {error && <p className="error">{error}</p>}
     </div>
   );
-};
+}
 
 export default VerifyEmail;

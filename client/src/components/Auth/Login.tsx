@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../store/authSlice";
+import { loginUser } from "../../store/auth/userThunks";
 import { RootState, AppDispatch } from "../../store/store";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { TextField, Alert, Stack, Box, Typography } from "@mui/material";
+import {
+  FormContainer,
+  PasswordField,
+  SubmitButton,
+  validators,
+} from "../comments/FormComponents";
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -11,42 +18,103 @@ const Login = () => {
     (state: RootState) => state.auth
   );
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [formErrors, setFormErrors] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear error when user types
+    if (formErrors[name as keyof typeof formErrors]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {
+      email: validators.email(formData.email),
+      password: validators.password(formData.password),
+    };
+
+    setFormErrors(errors);
+    return !Object.values(errors).some((error) => error);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email, password });
 
-    dispatch(loginUser({ email, password }));
+    if (!validateForm()) return;
+
+    dispatch(
+      loginUser({
+        email: formData.email,
+        password: formData.password,
+      })
+    );
   };
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !loading) {
       navigate("/me");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, loading]);
+
   return (
-    <div className="login-container">
-      <h2>Вхід</h2>
+    <FormContainer title="Login">
       <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit" disabled={loading}>
-          Увійти
-        </button>
-        {error && <p className="error">{error}</p>}
+        <Stack spacing={2}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={formData.email}
+            onChange={handleChange}
+            error={!!formErrors.email}
+            helperText={formErrors.email}
+          />
+
+          <PasswordField
+            name="password"
+            label="Password"
+            value={formData.password}
+            onChange={handleChange}
+            error={formErrors.password}
+            helperText={formErrors.password}
+            autoComplete="current-password"
+          />
+
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <SubmitButton loading={loading} text="Login" />
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+            <Link to="/forgot-password" style={{ textDecoration: "none" }}>
+              <Typography color="primary" variant="body2">
+                Forgot your password?
+              </Typography>
+            </Link>
+            <Link to="/register" style={{ textDecoration: "none" }}>
+              <Typography color="primary" variant="body2">
+                Create a new account
+              </Typography>
+            </Link>
+          </Box>
+        </Stack>
       </form>
-    </div>
+    </FormContainer>
   );
 };
 

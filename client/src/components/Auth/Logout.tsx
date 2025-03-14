@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../store/authSlice";
+import { logoutUser } from "../../store/auth/userThunks";
 import { AppDispatch } from "../../store/store";
 
 const Logout = () => {
@@ -10,16 +10,18 @@ const Logout = () => {
 
   useEffect(() => {
     dispatch(logoutUser())
-      .unwrap()
+      // .unwrap()
       .then(() => {
+        console.log("Exit");
+
         navigate("/login");
       })
       .catch((err) => {
-        console.error("❌ Помилка виходу:", err);
+        console.error("Exit error:", err);
       });
   }, [dispatch, navigate]);
 
-  return <div className="loading">Вихід...</div>;
+  return <div className="loading">Exit...</div>;
 };
 
 export default Logout;

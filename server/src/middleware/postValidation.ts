@@ -29,7 +29,7 @@ export const validateCreatePost = (
   // Валідація продуктових деталей
   if (
     postType === PostType.PRODUCT &&
-    (!productDetails || !productDetails.name || !productDetails.price)
+    (!productDetails || !productDetails.title || !productDetails.price)
   ) {
     res.status(400).json({
       success: false,
@@ -41,7 +41,7 @@ export const validateCreatePost = (
   // Валідація сервісних деталей
   if (
     postType === PostType.SERVICE &&
-    (!serviceDetails || !serviceDetails.name || !serviceDetails.description)
+    (!serviceDetails || !serviceDetails.title || !serviceDetails.description)
   ) {
     res.status(400).json({
       success: false,
@@ -71,7 +71,7 @@ export const validateUpdatePost = (
 
   // Валідація продуктових деталей
   if (postType === PostType.PRODUCT && productDetails) {
-    if (!productDetails.name || !productDetails.price) {
+    if (!productDetails.title || !productDetails.price) {
       res.status(400).json({
         success: false,
         message: 'Для продуктового поста необхідно вказати назву та ціну',
@@ -82,7 +82,7 @@ export const validateUpdatePost = (
 
   // Валідація сервісних деталей
   if (postType === PostType.SERVICE && serviceDetails) {
-    if (!serviceDetails.name || !serviceDetails.description) {
+    if (!serviceDetails.title || !serviceDetails.description) {
       res.status(400).json({
         success: false,
         message: 'Для сервісного поста необхідно вказати назву та опис',
