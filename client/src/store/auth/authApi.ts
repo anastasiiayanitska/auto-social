@@ -9,8 +9,7 @@ import {
   ChangePasswordData,
   VerifyPasswordChangeData,
 } from "../../types/auth";
-
-const API_URL = "http://localhost:3000/api";
+import { API_URL } from "../../utils/url";
 
 export const authApi = {
   register: async (formData: RegisterData) => {
@@ -42,7 +41,7 @@ export const authApi = {
     const response = await axios.get(`${API_URL}/me`, {
       withCredentials: true,
     });
-    console.log("📡 Запит користувача успішний:", response.data.data);
+
     return response.data.data;
   },
 
@@ -83,14 +82,12 @@ export const authApi = {
 
   fetchAllUsers: async () => {
     try {
-      console.log("📡 Виклик API для отримання всіх користувачів...");
       const response = await axios.get(`${API_URL}/all-users`, {
         withCredentials: true,
       });
-      console.log("📡 Відповідь API:", response.data);
+
       return response.data;
     } catch (error) {
-      console.error("❌ Помилка API:", error);
       throw error;
     }
   },
@@ -128,6 +125,11 @@ export const authApi = {
 
   verifyPasswordChange: async (data: VerifyPasswordChangeData) => {
     await axios.post(`${API_URL}/verify-password-change`, data, {
+      withCredentials: true,
+    });
+  },
+  deleteProfile: async (userId: string) => {
+    await axios.delete(`${API_URL}/profile/${userId}`, {
       withCredentials: true,
     });
   },

@@ -12,11 +12,10 @@ export const verifyEmail = createAsyncThunk<
   { rejectValue: string }
 >("/verifyEmail", async (data, { rejectWithValue }) => {
   try {
-    console.log(data);
     return await authApi.verifyEmail(data);
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка підтвердження електронної пошти"
+      error.response?.data?.message || "Email verification error"
     );
   }
 });
@@ -31,7 +30,7 @@ export const resendVerificationCode = createAsyncThunk<
     return;
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка відправки коду підтвердження"
+      error.response?.data?.message || "Error sending verification code"
     );
   }
 });

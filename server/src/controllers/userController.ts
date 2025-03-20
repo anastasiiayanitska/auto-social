@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import cloudinary from '../config/cloudinary';
 import fs from 'fs';
+import Post from '../models/Post';
 import { uploadSingleImage, deleteImage } from '../config/uploadService';
 export const updateProfile = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.params.id;
@@ -17,7 +17,7 @@ export const updateProfile = async (
     if (req.user.id.toString() !== userId) {
       res.status(403).json({
         success: false,
-        message: 'Ви не маєте прав для оновлення цього профілю',
+        message: 'You do not have permission to update this profile.',
       });
       return;
     }
@@ -38,7 +38,7 @@ export const updateProfile = async (
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Користувача не знайдено',
+        message: 'User not found',
       });
       return;
     }
@@ -48,7 +48,7 @@ export const updateProfile = async (
       if (usernameExists) {
         res.status(400).json({
           success: false,
-          message: 'Цей username вже використовується',
+          message: 'This username is already in use.',
         });
         return;
       }
@@ -58,16 +58,13 @@ export const updateProfile = async (
 
     if (req.file) {
       try {
-        console.log('Завантаження нового аватару:', req.file.path);
-
         if (user.avatar) {
           await deleteImage(user.avatar);
         }
 
         avatarUrl = await uploadSingleImage(req.file.path, 'avatars');
-        console.log('Новий аватар URL:', avatarUrl);
       } catch (uploadError) {
-        console.error('Помилка завантаження нового аватару:', uploadError);
+        console.error('Error loading new avatar:', uploadError);
 
         if (req.file && req.file.path && fs.existsSync(req.file.path)) {
           fs.unlinkSync(req.file.path);
@@ -96,7 +93,7 @@ export const updateProfile = async (
       data: updatedUser,
     });
   } catch (error: any) {
-    console.error('Помилка оновлення профілю:', error);
+    console.error('Profile update error:', error);
 
     if (req.file && req.file.path && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
@@ -104,15 +101,13 @@ export const updateProfile = async (
 
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при оновленні профілю користувача',
+      message: error.message || 'Error updating user profile',
     });
   }
 };
-
 export const deleteProfile = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.params.id;
@@ -120,7 +115,7 @@ export const deleteProfile = async (
     if (req.user.id.toString() !== userId) {
       res.status(403).json({
         success: false,
-        message: 'Ви не маєте прав для видалення цього профілю',
+        message: 'You do not have permission to delete this profile.',
       });
       return;
     }
@@ -130,7 +125,7 @@ export const deleteProfile = async (
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Користувача не знайдено',
+        message: 'User noz found',
       });
       return;
     }
@@ -142,36 +137,39 @@ export const deleteProfile = async (
           await cloudinary.uploader.destroy(`avatars/${publicId}`);
         }
       } catch (deleteError) {
-        console.error('Помилка видалення аватару з Cloudinary:', deleteError);
+        console.error('Error deleting avatar from Cloudinary:', deleteError);
       }
+    }
+
+    try {
+      await Post.deleteMany({ user: userId });
+      console.log(`All users post ${userId} deleted.`);
+    } catch (postDeleteError) {
+      console.error('Error deleting user posts:', postDeleteError);
     }
 
     await User.findByIdAndDelete(userId);
     res.clearCookie('token');
     res.status(200).json({
       success: true,
-      message: 'Профіль успішно видалено',
+      message: 'The profile and all its posts have been successfully deleted.',
     });
   } catch (error: any) {
-    console.error('Помилка видалення профілю:', error);
+    console.error('Error deleting profile:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при видаленні профілю користувача',
+      message: error.message || 'Error deleting user profile',
     });
   }
 };
-export const getMe = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+export const getMe = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await User.findById(req.user.id).select('-password');
 
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Користувача не знайдено',
+        message: 'User not found',
       });
       return;
     }
@@ -181,10 +179,10 @@ export const getMe = async (
       data: user,
     });
   } catch (error: any) {
-    console.error('Помилка отримання профілю:', error);
+    console.error('Error retrieving profile', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні даних користувача',
+      message: error.message || 'Error retrieving user data',
     });
   }
 };
@@ -192,7 +190,6 @@ export const getMe = async (
 export const getAllUser = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const users = await User.find({});
@@ -200,7 +197,7 @@ export const getAllUser = async (
     if (!users) {
       res.status(404).json({
         success: false,
-        message: 'Користувача не знайдено',
+        message: 'User not found',
       });
       return;
     }
@@ -210,10 +207,10 @@ export const getAllUser = async (
       data: users,
     });
   } catch (error: any) {
-    console.error('Помилка отримання:', error);
+    console.error('Error retrieving:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні',
+      message: error.message || 'Error while receiving',
     });
   }
 };
@@ -221,7 +218,6 @@ export const getAllUser = async (
 export const getUserById = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.params.id;
@@ -236,7 +232,7 @@ export const getUserById = async (
     if (!user) {
       res.status(404).json({
         success: false,
-        message: 'Користувача не знайдено',
+        message: 'User not found',
       });
       return;
     }
@@ -246,10 +242,10 @@ export const getUserById = async (
       data: user,
     });
   } catch (error: any) {
-    console.error('Помилка отримання профілю користувача:', error);
+    console.error('Error retrieving user profile:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при отриманні профілю користувача',
+      message: error.message || 'Error retrieving user profile',
     });
   }
 };

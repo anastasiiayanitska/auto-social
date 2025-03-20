@@ -17,7 +17,7 @@ export const forgotPassword = createAsyncThunk<
     return;
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка запиту на відновлення пароля"
+      error.response?.data?.message || "Password recovery request error"
     );
   }
 });
@@ -32,7 +32,7 @@ export const resetPassword = createAsyncThunk<
     return;
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка скидання пароля"
+      error.response?.data?.message || "Password reset error"
     );
   }
 });
@@ -47,7 +47,7 @@ export const changePassword = createAsyncThunk<
     return;
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка запиту на зміну пароля"
+      error.response?.data?.message || "Password change request error"
     );
   }
 });
@@ -62,7 +62,7 @@ export const verifyPasswordChange = createAsyncThunk<
     return;
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка підтвердження зміни пароля"
+      error.response?.data?.message || "Password change confirmation error"
     );
   }
 });

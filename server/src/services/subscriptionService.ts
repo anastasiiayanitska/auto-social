@@ -30,17 +30,19 @@ export const unfollowUser = async (followerId: string, followingId: string) => {
 };
 
 export const getFollowers = async (userId: string) => {
-  return await Subscription.find({ following: userId }).populate(
-    'follower',
-    'username',
-  );
+  return await Subscription.find({ following: userId }).populate({
+    path: 'follower',
+    select:
+      'username avatar firstName lastName bio website location phoneNumber',
+  });
 };
 
 export const getFollowing = async (userId: string) => {
-  return await Subscription.find({ follower: userId }).populate(
-    'following',
-    'username',
-  );
+  return await Subscription.find({ follower: userId }).populate({
+    path: 'following',
+    select:
+      'username avatar firstName lastName bio website location phoneNumber',
+  });
 };
 
 export const checkFollowStatus = async (

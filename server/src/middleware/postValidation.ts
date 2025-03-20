@@ -8,44 +8,41 @@ export const validateCreatePost = (
 ): void => {
   const { content, postType, productDetails, serviceDetails } = req.body;
   console.log(req.body, req.files);
-  // Перевірка наявності контенту
+
   if (!content || content.trim() === '') {
     res.status(400).json({
       success: false,
-      message: "Контент поста є обов'язковим",
+      message: 'Post content is required',
     });
     return;
   }
 
-  // Валідація типу поста
   if (postType && !Object.values(PostType).includes(postType)) {
     res.status(400).json({
       success: false,
-      message: 'Невірний тип поста',
+      message: 'Invalid post type',
     });
     return;
   }
 
-  // Валідація продуктових деталей
   if (
     postType === PostType.PRODUCT &&
     (!productDetails || !productDetails.title || !productDetails.price)
   ) {
     res.status(400).json({
       success: false,
-      message: 'Для продуктового поста необхідно вказати назву та ціну',
+      message: 'For a product post, you must specify a title and price',
     });
     return;
   }
 
-  // Валідація сервісних деталей
   if (
     postType === PostType.SERVICE &&
     (!serviceDetails || !serviceDetails.title || !serviceDetails.description)
   ) {
     res.status(400).json({
       success: false,
-      message: 'Для сервісного поста необхідно вказати назву та опис',
+      message: 'For a service post, you must specify a name and description.',
     });
     return;
   }

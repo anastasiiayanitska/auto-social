@@ -34,6 +34,6 @@ router.get('/user/:id', protect, getUserPosts);
 router.get('/:id', protect, getPostById);
 router.get('/', protect, getAllPosts);
 router.delete('/:id', protect, deletePost);
-router.put('/:id', protect, validateUpdatePost, updatePost);
+router.post('/:id', protect, uploadMultiple, validateUpdatePost, updatePost);
 
 export default router;

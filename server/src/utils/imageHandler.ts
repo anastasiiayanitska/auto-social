@@ -4,12 +4,12 @@ import { uploadMultipleImages, deleteImage } from '../config/uploadService';
 export const imageHandler = {
   async uploadImages(filePaths: string[]): Promise<string[]> {
     try {
-      console.log('Завантаження файлів у Cloudinary:', filePaths);
+      // console.log('Завантаження файлів у Cloudinary:', filePaths);
       const imagesUrl = await uploadMultipleImages(filePaths, 'images');
-      console.log('Завантажено URL зображень:', imagesUrl);
+      // console.log('Завантажено URL зображень:', imagesUrl);
       return imagesUrl;
     } catch (uploadError) {
-      console.error('Помилка завантаження зображень:', uploadError);
+      console.error('Error loading images:', uploadError);
 
       // Clean up local files on upload failure
       filePaths.forEach((path) => {
@@ -28,7 +28,7 @@ export const imageHandler = {
         await deleteImage(imageUrl);
       }
     } catch (deleteError) {
-      console.error('Помилка видалення зображень:', deleteError);
+      console.error('Image deletion error:', deleteError);
       // We'll just log the error but continue with the operation
     }
   },

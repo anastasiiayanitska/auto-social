@@ -11,7 +11,7 @@ export const registerUser = createAsyncThunk<
     return await authApi.register(formData);
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка реєстрації"
+      error.response?.data?.message || "Registration error"
     );
   }
 });
@@ -24,7 +24,7 @@ export const loginUser = createAsyncThunk<
   try {
     return await authApi.login(credentials);
   } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || "Помилка входу");
+    return rejectWithValue(error.response?.data?.message || "Login error");
   }
 });
 
@@ -35,9 +35,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
       await authApi.logout();
       return;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Помилка виходу з системи"
-      );
+      return rejectWithValue(error.response?.data?.message || "Logout error");
     }
   }
 );
@@ -49,7 +47,7 @@ export const fetchUser = createAsyncThunk<User, void, { rejectValue: string }>(
       return await authApi.fetchUser();
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Не вдалося отримати дані користувача"
+        error.response?.data?.message || "Failed to retrieve user data"
       );
     }
   }
@@ -61,14 +59,12 @@ export const fetchAllUsers = createAsyncThunk<
   { rejectValue: string }
 >("/fetchAllUsers", async (_, { rejectWithValue }) => {
   try {
-    console.log("🔄 Запит на отримання всіх користувачів...");
     const data = await authApi.fetchAllUsers();
-    console.log("✅ Дані отримані:", data);
+
     return data.data;
   } catch (error: any) {
-    console.error("❌ Помилка отримання користувачів:", error);
     return rejectWithValue(
-      error.response?.data?.message || "Не вдалося отримати список користувачів"
+      error.response?.data?.message || "Failed to retrieve user list"
     );
   }
 });

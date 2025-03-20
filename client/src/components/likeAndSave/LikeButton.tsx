@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import {
@@ -15,9 +14,15 @@ import {
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-
-const LikeButton = ({ postId, likesCount = 0 }) => {
-  const dispatch = useDispatch();
+import { useState, useEffect } from "react";
+import { AppDispatch } from "../../store/store";
+interface LikeButtonProps {
+  postId: string;
+  likesCount?: number;
+  authorId: string;
+}
+const LikeButton = ({ postId, likesCount = 0 }: LikeButtonProps) => {
+  const dispatch = useDispatch<AppDispatch>();
   const likeStatus = useSelector((state: RootState) =>
     state.interactions.likeStatus.find((status) => status.postId === postId)
   );

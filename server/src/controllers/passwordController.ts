@@ -25,7 +25,6 @@ export const forgotPassword = async (
     const user = await User.findOne({ email });
 
     if (!user) {
-      // For security reasons, don't tell the user the email doesn't exist
       res.status(200).json({
         success: true,
         message: 'If this email exists, a password reset code will be sent',
@@ -33,14 +32,12 @@ export const forgotPassword = async (
       return;
     }
 
-    // Create reset code
     const resetCode = generateVerificationCode();
 
     user.resetCode = resetCode;
-    user.resetCodeExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+    user.resetCodeExpires = new Date(Date.now() + 30 * 60 * 1000);
     await user.save();
 
-    // Send email with code
     const emailSent = await sendEmail(
       user.email,
       'Password Recovery',
@@ -97,13 +94,11 @@ export const resetPassword = async (
       return;
     }
 
-    // Set new password
     user.password = password;
     user.resetCode = null;
     user.resetCodeExpires = null;
     await user.save();
 
-    // Send password change notification
     await sendEmail(
       user.email,
       'Password Successfully Changed',
@@ -150,7 +145,6 @@ export const changePassword = async (
       return;
     }
 
-    // Verify current password
     const isPasswordValid = await user.comparePassword(currentPassword);
 
     if (!isPasswordValid) {
@@ -161,15 +155,13 @@ export const changePassword = async (
       return;
     }
 
-    // Generate password change verification code
     const verificationCode = generateVerificationCode();
 
     user.passwordChangeCode = verificationCode;
-    user.passwordChangeCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
-    user.pendingPasswordChange = newPassword; // Store new password temporarily
+    user.passwordChangeCodeExpires = Date.now() + 30 * 60 * 1000;
+    user.pendingPasswordChange = newPassword;
     await user.save();
 
-    // Send verification code
     await sendEmail(
       user.email,
       'Password Change Confirmation',

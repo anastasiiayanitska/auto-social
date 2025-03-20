@@ -3,7 +3,6 @@ import { PostType, IServicePost, IProductPost } from '../types/post.types';
 import Like from '../models/Like';
 import Comment from '../models/Comments';
 import { imageHandler } from '../utils/imageHandler';
-import mongoose, { ObjectId } from 'mongoose';
 
 export const postService = {
   async createPost(
@@ -75,14 +74,12 @@ export const postService = {
   },
 
   async deletePost(postId: string, userId: string) {
-    // Find the post
     const post = await Post.findById(postId);
 
     if (!post) {
       return { success: false, status: 404, message: 'Post not found' };
     }
 
-    // Check if user is the owner
     if (post.user.toString() !== userId.toString()) {
       return {
         success: false,
@@ -91,12 +88,10 @@ export const postService = {
       };
     }
 
-    // Delete images
     if (post.images && post.images.length > 0) {
       await imageHandler.deleteImages(post.images);
     }
 
-    // Delete associated data
     await Promise.all([
       Like.deleteMany({ post: postId }),
       Comment.deleteMany({ post: postId }),
@@ -112,14 +107,12 @@ export const postService = {
     postData: any,
     files: Express.Multer.File[],
   ) {
-    // Find the post
     const post = await Post.findById(postId);
-
+    console.log(post);
     if (!post) {
       return { success: false, status: 404, message: 'Post not found' };
     }
 
-    // Check if user is the owner
     if (post.user.toString() !== userId.toString()) {
       return {
         success: false,
@@ -128,19 +121,16 @@ export const postService = {
       };
     }
 
-    // Handle image updates
     let imagesUrl: string[] = [];
     if (files && Array.isArray(files) && files.length > 0) {
       const filePaths = files.map((file) => file.path);
       imagesUrl = await imageHandler.uploadImages(filePaths);
 
-      // Delete old images
       if (post.images && post.images.length > 0) {
         await imageHandler.deleteImages(post.images);
       }
     }
 
-    // Update post data
     post.content = postData.content || post.content;
     post.postType = postData.postType || post.postType;
     post.images = imagesUrl.length > 0 ? imagesUrl : post.images;

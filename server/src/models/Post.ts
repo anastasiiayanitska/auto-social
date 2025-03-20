@@ -88,12 +88,12 @@ const ProductPostSchema = new Schema<IProductPost>(
       },
       color: {
         type: String,
-        // required: true,
+        required: true,
         trim: true,
       },
       vehicleType: {
         type: String,
-        // required: true,
+
         enum: Object.values(VehicleType),
       },
       mileage: {

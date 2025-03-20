@@ -11,7 +11,7 @@ export const updateUser = createAsyncThunk<
     return await authApi.updateUser(userId, userData);
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Помилка оновлення профілю"
+      error.response?.data?.message || "Profile update error"
     );
   }
 });
@@ -25,7 +25,18 @@ export const fetchUserProfileById = createAsyncThunk<
     return await authApi.fetchUserProfileById(userId);
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.message || "Не вдалося отримати профіль користувача"
+      error.response?.data?.message || "Failed to retrieve user profile"
     );
   }
 });
+
+export const deleteProfileThunk = createAsyncThunk(
+  "user/delete",
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      await authApi.deleteProfile(userId);
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);

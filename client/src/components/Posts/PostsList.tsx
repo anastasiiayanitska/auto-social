@@ -1,93 +1,75 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { RootState } from "../../store/store";
-import { getAllPosts } from "../../store/post/postsThunks.tsx";
 import {
-  Card,
-  CardContent,
   Typography,
-  CircularProgress,
   Box,
   Grid,
-  CardMedia,
+  Pagination,
+  CircularProgress,
+  Container,
 } from "@mui/material";
+import { Post, ProductPost, ServicePost } from "../../types/social.types";
+import RegularPostCard from "./cards/RegularPostCard";
+import ProductPostCard from "./cards/ProductPostCard";
+import ServicePostCard from "./cards/ServicePostCard";
 
-const PostsList = () => {
-  const dispatch = useDispatch();
+interface PostsListProps {
+  posts: Post[] | ProductPost[] | ServicePost[];
+  loading?: boolean;
+  error?: string | null;
+  limit?: number;
+}
+
+const PostsList: React.FC<PostsListProps> = ({
+  posts,
+  loading = false,
+  error = null,
+  limit = 10,
+}) => {
   const navigate = useNavigate();
-  const { posts, loading, error } = useSelector(
-    (state: RootState) => state.posts
-  );
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    dispatch(getAllPosts());
-  }, [dispatch]);
+    if (posts.length > 0) {
+      console.log(
+        "PostsList received post IDs:",
+        posts.map((post) => post._id)
+      );
+    }
+  }, [posts]);
 
-  const handlePostClick = (postId: string) => {
-    console.log(postId);
-    navigate(`/posts/${postId}`);
+  const handlePostClick = (post: Post) => {
+    const postId = post._id;
+    console.log("Navigate to post:", postId);
+
+    if (postId) {
+      navigate(`/posts/${postId}`);
+    } else {
+      console.error("Post ID is undefined or null:", post);
+    }
   };
 
-  const renderPostCard = (post: any) => {
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+  };
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedPosts = posts.slice(startIndex, endIndex);
+
+  const renderPostCard = (post: Post) => {
     switch (post.postType) {
-      case "image":
-        return (
-          <Card
-            onClick={() => handlePostClick(post._id)}
-            sx={{ cursor: "pointer" }}
-          >
-            <CardMedia
-              component="img"
-              height="140"
-              image={post.images?.[0]?.url || "https://via.placeholder.com/150"}
-              alt={post.content}
-            />
-            <CardContent>
-              <Typography variant="h6">{post.content}</Typography>
-            </CardContent>
-          </Card>
-        );
-      case "text":
-        return (
-          <Card
-            onClick={() => handlePostClick(post._id)}
-            sx={{ cursor: "pointer" }}
-          >
-            <CardContent>
-              <Typography variant="h5" color="primary">
-                {post.content}
-              </Typography>
-            </CardContent>
-          </Card>
-        );
+      case "regular":
+        return <RegularPostCard post={post} onClick={handlePostClick} />;
       case "product":
-        return (
-          <Card
-            onClick={() => handlePostClick(post._id)}
-            sx={{ cursor: "pointer" }}
-          >
-            <CardContent>
-              <Typography variant="h6">
-                Product: {post.product?.name}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {post.product?.description}
-              </Typography>
-            </CardContent>
-          </Card>
-        );
+        return <ProductPostCard post={post} onClick={handlePostClick} />;
+      case "service":
+        return <ServicePostCard post={post} onClick={handlePostClick} />;
       default:
-        return (
-          <Card
-            onClick={() => handlePostClick(post._id)}
-            sx={{ cursor: "pointer" }}
-          >
-            <CardContent>
-              <Typography variant="h6">{post.content}</Typography>
-            </CardContent>
-          </Card>
-        );
+        return <RegularPostCard post={post} onClick={handlePostClick} />;
     }
   };
 
@@ -97,7 +79,7 @@ const PostsList = () => {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        height="100vh"
+        minHeight="200px"
       >
         <CircularProgress />
       </Box>
@@ -112,18 +94,36 @@ const PostsList = () => {
     );
   }
 
+  if (posts.length === 0 && !loading) {
+    return (
+      <Box padding={2}>
+        <Typography align="center" color="text.secondary">
+          No posts to display
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Box padding={2}>
-      <Typography variant="h4" gutterBottom>
-        All Posts
-      </Typography>
-      <Grid container spacing={2}>
-        {posts.map((post) => (
-          <Grid item xs={12} sm={6} md={4} key={post._id}>
+    <Box>
+      <Grid container spacing={3}>
+        {paginatedPosts.map((post) => (
+          <Grid item xs={12} sm={6} md={4} key={post._id || post.id}>
             {renderPostCard(post)}
           </Grid>
         ))}
       </Grid>
+
+      {posts.length > limit && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Pagination
+            count={Math.ceil(posts.length / limit)}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+          />
+        </Box>
+      )}
     </Box>
   );
 };

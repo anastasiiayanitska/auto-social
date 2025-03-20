@@ -1,13 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { User, Subscription, ApiResponse } from "../../types/social.types";
-
-const API_URL = "http://localhost:3000/api";
+import { RootState } from "../store";
+import { getSocket } from "../../utils/socket";
+import { API_URL } from "../../utils/url";
 
 export const followUser = createAsyncThunk<
   Subscription,
   string,
-  { rejectValue: string }
->("subscriptions/followUser", async (userId, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("subscriptions/followUser", async (userId, { rejectWithValue, getState }) => {
   try {
     const response = await fetch(
       `${API_URL}/subscriptions/users/${userId}/follow`,
@@ -23,6 +24,19 @@ export const followUser = createAsyncThunk<
     }
 
     const data: ApiResponse<Subscription> = await response.json();
+
+    // Send notification
+    const currentUser = getState().auth.user;
+    if (currentUser) {
+      const socket = getSocket();
+      if (socket) {
+        socket.emit("sendFollow", {
+          senderId: currentUser,
+          receiverId: userId,
+        });
+      }
+    }
+
     return data.data as Subscription;
   } catch (error: any) {
     return rejectWithValue(error.message || "Failed to follow user");

@@ -27,7 +27,7 @@ const fileFilter = (
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Тільки зображення дозволені для завантаження!'));
+    cb(new Error('Only images are allowed for upload!'));
   }
 };
 

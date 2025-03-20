@@ -3,16 +3,17 @@ import {
   Comment,
   CreateCommentData,
   ApiResponse,
+  User,
 } from "../../types/social.types";
+import { RootState } from "../store";
+import { getSocket } from "../../utils/socket";
+import { API_URL } from "../../utils/url";
 
-const API_URL = "http://localhost:3000/api";
-
-// Like/Unlike posts
 export const likePost = createAsyncThunk<
   string,
   string,
-  { rejectValue: string }
->("interactions/likePost", async (postId, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("interactions/likePost", async (postId, { rejectWithValue, getState }) => {
   try {
     const response = await fetch(
       `${API_URL}/interactions/posts/${postId}/likes`,
@@ -25,6 +26,29 @@ export const likePost = createAsyncThunk<
     if (!response.ok) {
       const errorData = await response.json();
       return rejectWithValue(errorData.message || "Failed to like post");
+    }
+
+    // Отримати дані відповіді, якщо вони містять додаткову інформацію
+    const data = await response.json();
+
+    // Отримати автора поста з відповіді API
+    // Якщо API не повертає автора, цю частину потрібно буде змінити
+    const authorId = data.authorId || null;
+    console.log(authorId);
+    // Відправити сповіщення через сокет, якщо є authorId
+    if (authorId) {
+      const currentUser = getState().auth.user;
+      if (currentUser) {
+        const socket = getSocket();
+        if (socket) {
+          socket.emit("sendLike", {
+            senderId: currentUser._id,
+            receiverId: authorId,
+            postId: postId,
+            type: "like",
+          });
+        }
+      }
     }
 
     return postId;
@@ -85,39 +109,9 @@ export const checkLikeStatus = createAsyncThunk<
   }
 });
 
-// Comments
-// export const createComment = createAsyncThunk<
-//   Comment,
-//   CreateCommentData,
-//   { rejectValue: string }
-// >("interactions/createComment", async (commentData, { rejectWithValue }) => {
-//   try {
-//     const response = await fetch(
-//       `${API_URL}/interactions/posts/${commentData.postId}/comments`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ content: commentData.content }),
-//         credentials: "include",
-//       }
-//     );
-
-//     if (!response.ok) {
-//       const errorData = await response.json();
-//       return rejectWithValue(errorData.message || "Failed to create comment");
-//     }
-
-//     const data: ApiResponse<Comment> = await response.json();
-//     return data.data as Comment;
-//   } catch (error: any) {
-//     return rejectWithValue(error.message || "Failed to create comment");
-//   }
-// });
 export const createComment = createAsyncThunk<
   Comment,
-  CreateCommentData,
+  CreateCommentData & { authorId: string },
   { state: RootState; rejectValue: string }
 >(
   "interactions/createComment",
@@ -143,18 +137,30 @@ export const createComment = createAsyncThunk<
       const data: ApiResponse<Comment> = await response.json();
       const currentUser = getState().auth.user;
 
-      // Manually add username and userId
+      // Send notification if the post is not our own
+      if (currentUser && commentData.authorId !== currentUser._id) {
+        const socket = getSocket();
+        if (socket) {
+          socket.emit("sendComment", {
+            senderId: currentUser._id,
+            receiverId: commentData.authorId,
+            postId: commentData.postId,
+            commentId: data.data._id,
+            commentText: commentData.content,
+          });
+        }
+      }
+
       return {
         ...data.data,
         username: currentUser?.username || "Anonymous",
-        userId: currentUser?.id,
+        userId: currentUser?._id,
       };
     } catch (error: any) {
       return rejectWithValue(error.message || "Failed to create comment");
     }
   }
 );
-
 export const getPostComments = createAsyncThunk<
   { postId: string; comments: Comment[] },
   string,
@@ -208,7 +214,6 @@ export const deleteComment = createAsyncThunk<
   }
 );
 
-// Save/Unsave Posts
 export const savePost = createAsyncThunk<
   string,
   string,
@@ -225,7 +230,9 @@ export const savePost = createAsyncThunk<
       return rejectWithValue(errorData.message || "Failed to save post");
     }
 
-    return postId;
+    const data = await response.json();
+
+    return data.data;
   } catch (error: any) {
     return rejectWithValue(error.message || "Failed to save post");
   }
@@ -280,10 +287,16 @@ export const checkSaveStatus = createAsyncThunk<
 export const getSavedPosts = createAsyncThunk<
   { posts: any[] },
   void,
-  { rejectValue: string }
->("interactions/getSavedPosts", async (_, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("interactions/getSavedPosts", async (_, { rejectWithValue, getState }) => {
   try {
-    const response = await fetch("/api/saved-posts", {
+    const userId = getState().auth.user?._id;
+
+    if (!userId) {
+      return rejectWithValue("User not authenticated");
+    }
+
+    const response = await fetch(`${API_URL}/posts/${userId}/all-saved-post`, {
       credentials: "include",
     });
 
@@ -295,7 +308,7 @@ export const getSavedPosts = createAsyncThunk<
     }
 
     const data = await response.json();
-    return { posts: data.data };
+    return { posts: data.data || [] };
   } catch (error: any) {
     return rejectWithValue(error.message || "Failed to fetch saved posts");
   }

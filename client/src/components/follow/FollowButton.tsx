@@ -33,27 +33,22 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 
   const [isHovering, setIsHovering] = useState(false);
 
-  // Перевіряємо, чи це не профіль поточного користувача
   const isOwnProfile = user && user._id === userId;
 
-  // Визначаємо чи користувач вже підписаний
   const isFollowing = followStatus[userId] || false;
 
   useEffect(() => {
-    // Перевіряємо статус підписки при монтуванні компонента
     if (isAuthenticated && !isOwnProfile && userId) {
       dispatch(checkFollowStatus(userId));
     }
   }, [dispatch, userId, isAuthenticated, isOwnProfile]);
 
-  // Коли статус підписки змінюється, викликаємо переданий callback
   useEffect(() => {
     if (onFollowChange) {
       onFollowChange(isFollowing);
     }
   }, [isFollowing, onFollowChange]);
 
-  // Якщо це власний профіль або користувач не авторизований - не показуємо кнопку
   if (isOwnProfile || !isAuthenticated) {
     return null;
   }
@@ -66,12 +61,11 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     }
   };
 
-  // Визначаємо текст та іконку кнопки
   const buttonText = isFollowing
     ? isHovering
-      ? "Відписатися"
-      : "Підписаний"
-    : "Підписатися";
+      ? "Unsubscribe"
+      : "Signed"
+    : "Sign up";
 
   const buttonIcon = isFollowing ? <PersonRemoveIcon /> : <PersonAddIcon />;
   const buttonColor = isFollowing ? "secondary" : "primary";

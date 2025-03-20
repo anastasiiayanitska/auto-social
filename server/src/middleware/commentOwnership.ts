@@ -1,16 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import Comment from '../models/Comments';
 
-// Extend Request interface properly
 interface RequestWithComment extends Request {
   comment?: any;
   user?: {
     _id: string;
-    // Інші властивості користувача
   };
 }
 
-// Check comment ownership middleware
 export const checkCommentOwnership = async (
   req: Request,
   res: Response,
@@ -23,7 +20,7 @@ export const checkCommentOwnership = async (
     if (!userId) {
       res.status(401).json({
         success: false,
-        message: 'Потрібна авторизація',
+        message: 'Authorization required',
       });
       return;
     }
@@ -33,27 +30,25 @@ export const checkCommentOwnership = async (
     if (!comment) {
       res.status(404).json({
         success: false,
-        message: 'Коментар не знайдено',
+        message: 'Comment not found',
       });
       return;
     }
 
-    // Check if the user is the owner of the comment
     if (comment.user.toString() !== userId.toString()) {
       res.status(403).json({
         success: false,
-        message: 'Ви не маєте прав для видалення цього коментаря',
+        message: 'You do not have permission to delete this comment.',
       });
       return;
     }
 
-    // Add comment to request object for use in controller
     (req as RequestWithComment).comment = comment;
     next();
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Помилка при перевірці власності коментаря',
+      message: error.message || 'Error checking comment ownership',
     });
   }
 };

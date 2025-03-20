@@ -1,19 +1,11 @@
-import {
-  VehicleType,
-  EngineType,
-  TransmissionType,
-  Condition,
-} from "./vehicle.types";
-import { Types } from "mongoose";
+import { VehicleType, EngineType, TransmissionType } from "./vehicle.types";
 
-// User types
 export interface User {
   _id: string;
   username: string;
   avatar?: string;
 }
 
-// Post types
 export enum PostType {
   REGULAR = "regular",
   PRODUCT = "product",
@@ -22,6 +14,7 @@ export enum PostType {
 
 export interface Post {
   _id: string;
+  title: String;
   user: string | User;
   content: string;
   images: string[];
@@ -73,7 +66,6 @@ export interface RegularPost extends Post {
   postType: PostType.REGULAR;
 }
 
-// Comment type
 export interface Comment {
   _id: string;
   user: string | User;
@@ -83,7 +75,25 @@ export interface Comment {
   updatedAt: string;
 }
 
-// Subscription types
+export interface LikeStatus {
+  postId: string;
+  liked: boolean;
+}
+
+export interface SaveStatus {
+  postId: string;
+  saved: boolean;
+}
+export interface InteractionsState {
+  likeStatus: LikeStatus[];
+  saveStatus: SaveStatus[];
+  comments: {
+    [postId: string]: Comment[];
+  };
+  loadingComments: boolean;
+  savedPosts: any[];
+  loadingSavedPosts: boolean;
+}
 export interface Subscription {
   _id: string;
   follower: string | User;
@@ -91,33 +101,20 @@ export interface Subscription {
   createdAt: string;
 }
 
-// SavedPost type
 export interface SavedPost {
   _id: string;
   user: string | User;
   post: string | Post;
   createdAt: string;
+  updatedAt: string;
 }
 
-// API Response types
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
 }
 
-export interface PaginatedResponse<T> {
-  success: boolean;
-  data: T[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
-}
-
-// Form data types for creating/updating
 export interface CreatePostData {
   content: string;
   postType: PostType;

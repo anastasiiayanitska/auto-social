@@ -1,7 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 
-// Функція для завантаження одного файлу (наприклад, аватару)
 export const uploadSingleImage = async (filePath: string, folder: string) => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
@@ -9,19 +8,17 @@ export const uploadSingleImage = async (filePath: string, folder: string) => {
       transformation: [{ width: 500, height: 500, crop: 'fill' }],
     });
 
-    // Видалення тимчасового файлу після успішного завантаження
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
     return result.secure_url;
   } catch (error) {
-    console.error('Помилка завантаження файлу:', error);
+    console.error('File upload error:', error);
     throw error;
   }
 };
 
-// Функція для завантаження декількох файлів
 export const uploadMultipleImages = async (
   filePaths: string[],
   folder: string,
@@ -33,7 +30,6 @@ export const uploadMultipleImages = async (
         transformation: [{ width: 500, height: 500, crop: 'fill' }],
       });
 
-      // Видалення тимчасового файлу після успішного завантаження
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -43,33 +39,29 @@ export const uploadMultipleImages = async (
 
     return await Promise.all(uploadPromises);
   } catch (error) {
-    console.error('Помилка завантаження файлів:', error);
+    console.error('Files upload error:', error);
     throw error;
   }
 };
 
-// Функція для видалення файлу з Cloudinary
 export const deleteImage = async (imageUrl: string) => {
   try {
-    // Отримання public_id з URL
     const urlParts = imageUrl.split('/');
     const filename = urlParts[urlParts.length - 1];
     const publicIdWithExtension = filename.split('.');
     const publicId = publicIdWithExtension[0];
 
-    // Отримання папки з URL
-    let folder = 'uploads'; // За замовчуванням
+    let folder = 'uploads';
     if (imageUrl.includes('/avatars/')) {
       folder = 'avatars';
     }
 
-    // Видалення зображення
     if (publicId) {
       await cloudinary.uploader.destroy(`${folder}/${publicId}`);
-      console.log(`Зображення ${folder}/${publicId} успішно видалено`);
+      console.log(`Images ${folder}/${publicId} wad deleted`);
     }
   } catch (error) {
-    console.error('Помилка видалення файлу з Cloudinary:', error);
+    console.error('Error deleting with Cloudinary:', error);
     throw error;
   }
 };

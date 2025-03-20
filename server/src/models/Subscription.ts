@@ -19,7 +19,6 @@ const SubscriptionSchema = new Schema<ISubscription>(
   },
 );
 
-// Make sure a user can't follow the same user multiple times
 SubscriptionSchema.index({ follower: 1, following: 1 }, { unique: true });
 
 export default mongoose.model<ISubscription>(

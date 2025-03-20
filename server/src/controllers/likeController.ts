@@ -2,68 +2,98 @@ import { Request, Response, NextFunction } from 'express';
 import Post from '../models/Post';
 import Like from '../models/Like';
 
-// Like a post
-export const likePost = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+import Notification from '../models/Notification'; // Додайте імпорт моделі сповіщень
+
+export const likePost = async (req: Request, res: Response): Promise<void> => {
   try {
     const postId = req.params.postId;
     const userId = req.user._id;
 
-    // Check if post exists
     const post = await Post.findById(postId);
     if (!post) {
-      res.status(404).json({
-        success: false,
-        message: 'Post not found',
-      });
+      res.status(404).json({ success: false, message: 'Post not found' });
       return;
     }
 
-    // Check if user already liked the post
     const existingLike = await Like.findOne({ user: userId, post: postId });
     if (existingLike) {
-      res.status(400).json({
-        success: false,
-        message: 'You have already liked this post',
-      });
+      res
+        .status(400)
+        .json({ success: false, message: 'You have already liked this post' });
       return;
     }
 
-    // Create like
-    await Like.create({
-      user: userId,
-      post: postId,
-    });
-
-    // Increment like count on post
+    await Like.create({ user: userId, post: postId });
     await Post.findByIdAndUpdate(postId, { $inc: { likesCount: 1 } });
 
-    res.status(200).json({
-      success: true,
-      message: 'Like successfully added',
-    });
+    // Створюємо сповіщення
+    if (post.user.toString() !== userId.toString()) {
+      await Notification.create({
+        senderId: userId,
+        receiverId: post.user, // Власник поста
+        type: 'like',
+        postId: postId,
+        read: false,
+      });
+    }
+
+    res.status(200).json({ success: true, message: 'Like successfully added' });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Error adding like',
-    });
+    res
+      .status(500)
+      .json({ success: false, message: error.message || 'Error adding like' });
   }
 };
+// export const likePost = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const postId = req.params.postId;
+//     const userId = req.user._id;
 
-// Unlike a post
+//     const post = await Post.findById(postId);
+//     if (!post) {
+//       res.status(404).json({
+//         success: false,
+//         message: 'Post not found',
+//       });
+//       return;
+//     }
+
+//     const existingLike = await Like.findOne({ user: userId, post: postId });
+//     if (existingLike) {
+//       res.status(400).json({
+//         success: false,
+//         message: 'You have already liked this post',
+//       });
+//       return;
+//     }
+
+//     await Like.create({
+//       user: userId,
+//       post: postId,
+//     });
+
+//     await Post.findByIdAndUpdate(postId, { $inc: { likesCount: 1 } });
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Like successfully added',
+//     });
+//   } catch (error: any) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || 'Error adding like',
+//     });
+//   }
+// };
+
 export const unlikePost = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const postId = req.params.postId;
     const userId = req.user._id;
 
-    // Check if like exists
     const like = await Like.findOne({ user: userId, post: postId });
     if (!like) {
       res.status(404).json({
@@ -73,10 +103,8 @@ export const unlikePost = async (
       return;
     }
 
-    // Delete like
     await Like.findByIdAndDelete(like._id);
 
-    // Decrement like count on post
     await Post.findByIdAndUpdate(postId, { $inc: { likesCount: -1 } });
 
     res.status(200).json({
@@ -91,11 +119,9 @@ export const unlikePost = async (
   }
 };
 
-// Check if user liked a post
 export const checkLikeStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const postId = req.params.postId;

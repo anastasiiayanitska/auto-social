@@ -1,20 +1,17 @@
-import User from '../models/User';
 import Post from '../models/Post';
 import SavedPost from '../models/Saved';
-import mongoose from 'mongoose';
 
 export const savedPost = async (userId: string, postId: string) => {
   const post = await Post.findById(postId);
   if (!post) throw new Error('Post not found');
-  const existingSave = await SavedPost.findOne({
-    user: userId,
-    savedPost: postId,
-  });
-  if (existingSave) throw new Error('You have already saved this post!');
-  return await SavedPost.create({
-    user: userId,
-    savedPost: postId,
-  });
+
+  const savedPost = await SavedPost.findOneAndUpdate(
+    { user: userId, savedPost: postId },
+    { user: userId, savedPost: postId },
+    { upsert: true, new: true },
+  );
+
+  return postId;
 };
 
 export const unsavedPost = async (userId: string, postId: string) => {
@@ -26,9 +23,19 @@ export const unsavedPost = async (userId: string, postId: string) => {
 };
 
 export const getSavedPosts = async (userId: string) => {
-  return await SavedPost.find({ user: userId });
+  return await SavedPost.find({ user: userId })
+    .populate({
+      path: 'savedPost',
+      populate: {
+        path: 'user',
+        select: 'username email avatar firstName lastName',
+      },
+    })
+    .populate({
+      path: 'user',
+      select: 'username email avatar firstName lastName',
+    });
 };
-
 export const getUserSavedPosts = async (postId: string) => {
   return await SavedPost.find({ savedPost: postId });
 };

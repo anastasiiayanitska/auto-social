@@ -3,20 +3,18 @@ import {
   savedPost,
   unsavedPost,
   getSavedPosts,
-  getUserSavedPosts,
   checkSavedStatus,
 } from '../services/savedPostService';
-import { log } from 'console';
 
 export const savedNewPost = async (req: Request, res: Response) => {
   try {
-    const newSavedPost = await savedPost(req.user._id, req.params.postId);
-    res.status(201).json({ success: true, data: newSavedPost });
+    const postId = await savedPost(req.user._id, req.params.postId);
+    console.log('Saved post ID:', postId);
+    res.status(201).json({ success: true, data: postId });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 export const unSavedPost = async (req: Request, res: Response) => {
   try {
     const newSavedPost = await unsavedPost(req.user._id, req.params.postId);
@@ -35,10 +33,11 @@ export const allSavedPosts = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 export const allUserSavedPosts = async (req: Request, res: Response) => {
   try {
-    const listUsersSavedPost = await getUserSavedPosts(req.params.postId);
-    res.status(200).json({ success: true, data: listUsersSavedPost });
+    const listSavedPost = await getSavedPosts(req.user._id);
+    res.status(200).json({ success: true, data: listSavedPost });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

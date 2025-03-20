@@ -4,7 +4,6 @@ import { postService } from '../services/postsService';
 export const createPost = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user._id;
@@ -30,7 +29,6 @@ export const createPost = async (
 export const getUserPosts = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.params.id;
@@ -51,7 +49,6 @@ export const getUserPosts = async (
 export const getPostById = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const postId = req.params.id;
@@ -80,7 +77,6 @@ export const getPostById = async (
 export const getAllPosts = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const result = await postService.getAllPosts();
@@ -100,7 +96,6 @@ export const getAllPosts = async (
 export const getMyPosts = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user._id;
@@ -122,7 +117,6 @@ export const getMyPosts = async (
 export const deletePost = async (
   req: Request,
   res: Response,
-  next: NextFunction,
 ): Promise<void> => {
   try {
     const postId = req.params.id;
@@ -158,6 +152,8 @@ export const updatePost = async (
   try {
     const postId = req.params.id;
     const userId = req.user._id;
+    console.log('REQUEST BODY:', req.body);
+    console.log('REQUEST FILES:', req.files);
 
     const result = await postService.updatePost(
       postId,
@@ -185,3 +181,44 @@ export const updatePost = async (
     });
   }
 };
+// export const updatePost = async (
+//   req: Request,
+//   res: Response,
+// ): Promise<void> => {
+//   try {
+//     const postId = req.params.id;
+//     const userId = req.user._id;
+
+//     if (req.body.productDetails) {
+//       req.body.productDetails = JSON.parse(req.body.productDetails);
+//     }
+//     if (req.body.serviceDetails) {
+//       req.body.serviceDetails = JSON.parse(req.body.serviceDetails);
+//     }
+
+//     const result = await postService.updatePost(
+//       postId,
+//       userId,
+//       req.body,
+//       req.files as Express.Multer.File[],
+//     );
+
+//     if (!result.success) {
+//       res.status(500).json({
+//         success: false,
+//         message: result.message,
+//       });
+//       return;
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: result.data,
+//     });
+//   } catch (error: any) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || 'Error editing post',
+//     });
+//   }
+// };

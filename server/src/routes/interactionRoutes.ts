@@ -13,7 +13,7 @@ import {
 import { checkCommentOwnership } from '../middleware/commentOwnership';
 
 const router = express.Router();
-// Comments
+
 router.post('/posts/:postId/comments', protect, createComment);
 router.get('/posts/:postId/comments', getPostComments);
 router.delete(
@@ -23,7 +23,6 @@ router.delete(
   deleteComment,
 );
 
-// Likes
 router.post('/posts/:postId/likes', protect, likePost);
 router.delete('/posts/:postId/likes', protect, unlikePost);
 router.get('/posts/:postId/likes/status', protect, checkLikeStatus);

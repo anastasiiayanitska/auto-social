@@ -9,13 +9,13 @@ import {
 import { IconButton, Tooltip } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-
+import { AppDispatch } from "../../store/store";
 interface SavePostButtonProps {
   postId: string;
 }
 
 const SavePostButton: React.FC<SavePostButtonProps> = ({ postId }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 

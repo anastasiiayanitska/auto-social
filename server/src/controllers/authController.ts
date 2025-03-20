@@ -32,13 +32,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if email is verified
     if (!user.emailVerified) {
-      // Generate new code
       const verificationCode = generateVerificationCode();
 
       user.verificationCode = verificationCode;
-      user.verificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+      user.verificationCodeExpires = Date.now() + 30 * 60 * 1000;
       await user.save();
 
       await sendEmail(

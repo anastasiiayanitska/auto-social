@@ -7,7 +7,7 @@ import {
   fetchUser,
   fetchAllUsers,
 } from "./userThunks";
-import { updateUser, fetchUserProfileById } from "./profileThunks";
+import { updateUser, deleteProfileThunk } from "./profileThunks";
 import { verifyEmail, resendVerificationCode } from "./verificationThunks";
 import {
   forgotPassword,
@@ -42,21 +42,21 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // 🔹 Реєстрація
+
       .addCase(registerUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.loading = false;
         state.error = null;
         state.verificationSent = true;
       })
-      // 🔹 Логін
+
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.loading = false;
         state.error = null;
         state.isAuthenticated = true;
       })
-      // 🔹 Вихід
+
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.loading = false;
@@ -75,46 +75,53 @@ const authSlice = createSlice({
         state.users = action.payload;
         state.loading = false;
       })
-      // 🔹 Оновлення користувача
+
       .addCase(updateUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
       })
-      // 🔹 Підтвердження email
+
       .addCase(verifyEmail.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.token = action.payload.token;
+
         state.loading = false;
         state.isAuthenticated = true;
         state.verificationSent = false;
       })
-      // 🔹 Повторна відправка коду підтвердження
+
       .addCase(resendVerificationCode.fulfilled, (state) => {
         state.loading = false;
         state.verificationSent = true;
       })
-      // 🔹 Забули пароль
+
       .addCase(forgotPassword.fulfilled, (state) => {
         state.loading = false;
         state.passwordResetSent = true;
       })
-      // 🔹 Скидання пароля
+
       .addCase(resetPassword.fulfilled, (state) => {
         state.loading = false;
         state.passwordResetSent = false;
       })
-      // 🔹 Запит на зміну пароля
+
       .addCase(changePassword.fulfilled, (state) => {
         state.loading = false;
         state.passwordChangeRequested = true;
+      });
+    builder
+      .addCase(deleteProfileThunk.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.loading = false;
+        state.error = null;
       })
-      // 🔹 Підтвердження зміни пароля
+
       .addCase(verifyPasswordChange.fulfilled, (state) => {
         state.loading = false;
         state.passwordChangeRequested = false;
       })
-      // 🔹 Ловимо всі pending-запити
+
       .addMatcher(
         (action) => action.type.endsWith("/pending"),
         (state) => {
@@ -122,7 +129,7 @@ const authSlice = createSlice({
           state.error = null;
         }
       )
-      // 🔹 Ловимо всі помилки
+
       .addMatcher(
         (action) => action.type.endsWith("/rejected"),
         (state, action) => {

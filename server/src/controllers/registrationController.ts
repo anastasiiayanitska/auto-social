@@ -42,7 +42,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    // Generate 6-digit verification code
     const verificationCode = generateVerificationCode();
 
     const newUser = await User.create({
@@ -58,7 +57,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       website,
       emailVerified: false,
       verificationCode,
-      verificationCodeExpires: Date.now() + 30 * 60 * 1000, // Code valid for 30 minutes
+      verificationCodeExpires: Date.now() + 30 * 60 * 1000,
     });
 
     await sendEmail(
@@ -123,7 +122,6 @@ export const verifyEmail = async (
     user.verificationCodeExpires = null;
     await user.save();
 
-    // Automatic login after verification
     const token = generateToken(user);
     res.cookie('token', token, {
       httpOnly: true,
@@ -179,11 +177,10 @@ export const resendVerificationCode = async (
       return;
     }
 
-    // Generate new code
     const verificationCode = generateVerificationCode();
 
     user.verificationCode = verificationCode;
-    user.verificationCodeExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+    user.verificationCodeExpires = Date.now() + 30 * 60 * 1000;
     await user.save();
 
     await sendEmail(
